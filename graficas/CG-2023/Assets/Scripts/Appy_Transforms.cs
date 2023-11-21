@@ -1,15 +1,22 @@
+/*
+Functions to work with wheels and car transformation / rotation
+
+Oswaldo Ilhuicatzi Mendizábal with the help of Alan with understanding the system
+2023-11-16
+*/
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Appy_Transforms : MonoBehaviour
 {
-    [SerializeField] Vector3 displacement;
-    [SerializeField] float speed;
-    [SerializeField] GameObject wheel;
-    [SerializeField] float angle;
-    [SerializeField] AXIS rotationAxis;
-    [SerializeField] Vector3[] wheelPos;
+    [SerializeField] Vector3 displacement; // Translation vector
+    [SerializeField] float speed;           // Rotation speed
+    [SerializeField] GameObject wheel;     // Wheel object
+    [SerializeField] float angle;          // Rotation angle
+    [SerializeField] AXIS rotationAxis;    // Rotation axis
+    [SerializeField] Vector3[] wheelPos;   // Positions of multiple wheels
 
     Mesh mesh;
     Mesh[] wheelMesh = new Mesh[4];
@@ -20,6 +27,7 @@ public class Appy_Transforms : MonoBehaviour
 
     void Start()
     {
+        // Get the mesh and vertices of the main object
         mesh = GetComponentInChildren<MeshFilter>().mesh;
         baseVertex = mesh.vertices;
         newVertex = new Vector3[baseVertex.Length];
@@ -32,15 +40,18 @@ public class Appy_Transforms : MonoBehaviour
 
     void Update()
     {
+        // Calculate rotation angle based on displacement
         angle = GetAngle(displacement);
         DoTransform();
     }
 
+    // Calculate the rotation angle based on the displacement vector
     float GetAngle(Vector3 displacement)
     {
         return Mathf.Atan2(displacement.z, -displacement.x) * Mathf.Rad2Deg;
     }
 
+    // Apply transformations to the main object and wheels
     void DoTransform()
     {
         Matrix4x4 move = HW_Transforms.TranslationMat(displacement.x * Time.time,
@@ -53,6 +64,7 @@ public class Appy_Transforms : MonoBehaviour
 
         Matrix4x4 rotateWheel = HW_Transforms.RotateMat(Time.time * speed, AXIS.Z);
 
+         // Apply transformations to each wheel
         for (int i = 0; i < wheelMesh.Length; i++)
         {
             Matrix4x4 mainWheelPos = HW_Transforms.TranslationMat(wheelPos[i].x, wheelPos[i].y, wheelPos[i].z);
@@ -68,6 +80,7 @@ public class Appy_Transforms : MonoBehaviour
             wheelMesh[i].RecalculateNormals();
         }
 
+        // Apply transformations to each vertex of the main object
         for (int i = 0; i < newVertex.Length; i++)
         {
             Vector4 temp = new Vector4(baseVertex[i].x, baseVertex[i].y, baseVertex[i].z, 1);
@@ -78,6 +91,7 @@ public class Appy_Transforms : MonoBehaviour
         mesh.RecalculateNormals();
     }
 
+    // Generate multiple wheels according to the car´s position
     void generateWheels()
     {
         Vector3 originalPos = new Vector3(0, 0, 0);

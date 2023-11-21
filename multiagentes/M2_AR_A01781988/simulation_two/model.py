@@ -22,29 +22,12 @@ class CleaningModel(Model):
 
         # RandomActivation is a scheduler that activates each agent once per step, in random order.
         self.schedule = RandomActivation(self)
-        self.running = True 
-
-        # Initialize a single Roomba and its ChargingStation at (1, 1)
-        charging_station_pos = (1, 1)
-        charging_station = ChargingStation(self.next_id(), self)
-        self.grid.place_agent(charging_station, charging_station_pos)
-        self.schedule.add(charging_station)
-
-        roomba = Roomba(self.next_id(), self, charging_station_pos)
-        self.grid.place_agent(roomba, charging_station_pos)
-        self.schedule.add(roomba)
+        self.running = True
 
         self.datacollector = DataCollector( 
         agent_reporters={"Steps": lambda a: a.steps_taken if isinstance(a, Roomba) else 0,
                         "Cleaning percentage": lambda m: m.cleaning_percentage if isinstance(m, Roomba) else 0},
-        model_reporters={"Total Time": "total_time"}) 
-
-        # Creates the border of the grid
-        border = [(x, y) for y in range(height) for x in range(width) if y in [0, height-1] or x in [0, width - 1]]  
-
-        for pos in border:
-            obs = ObstacleAgent(pos, self)
-            self.grid.place_agent(obs, pos)
+        model_reporters={"Total Time": "total_time"})
         
         pos_gen = lambda w, h: (self.random.randrange(w), self.random.randrange(h)) 
 
@@ -54,11 +37,27 @@ class CleaningModel(Model):
             while not self.grid.is_cell_empty(pos):
                 pos = pos_gen(self.grid.width, self.grid.height)
             self.grid.place_agent(o, pos)
-            self.schedule.add(o) 
-
+            self.schedule.add(o)
         
         self.datacollector.collect(self)
 
+        # Crear estaciones de carga en posiciones aleatorias
+        charging_stations = []
+        for i in range(N):
+            charging_station_pos = self.random.randrange(width), self.random.randrange(height)
+            charging_station = ChargingStation(self.next_id(), self)
+            self.grid.place_agent(charging_station, charging_station_pos)
+            self.schedule.add(charging_station)
+            charging_stations.append(charging_station)
+        
+        # Crear agentes Roomba en posiciones aleatorias con sus estaciones de carga correspondientes
+        for _ in range(N):
+            charging_station = charging_stations.pop(0)
+            roomba = Roomba(self.next_id(), self, charging_station_pos=charging_station.pos)
+            self.grid.place_agent(roomba, roomba.pos)
+            self.schedule.add(roomba)
+
+        # Genera una celda de basura en una posición aleatoria
         for i in range(amount_trash): 
             t = TrashAgent(i + 2000, self)  
             self.schedule.add(t)

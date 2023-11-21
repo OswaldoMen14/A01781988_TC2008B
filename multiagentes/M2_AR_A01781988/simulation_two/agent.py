@@ -14,6 +14,7 @@ class Roomba(Agent):
     def __init__(self, unique_id, model, charging_station_pos):
         super().__init__(unique_id, model)
         self.charging_station_pos = charging_station_pos
+        self.pos = charging_station_pos
         self.steps_taken = 0
         self.battery_level = 100
         self.is_charging = False
@@ -34,7 +35,12 @@ class Roomba(Agent):
         x, y = self.pos
         possible_moves = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
         new_moves = [move for move in possible_moves if move not in self.visited_positions and self.is_path_clear(move)]
-        new_pos = choice(new_moves) if new_moves else choice([move for move in possible_moves if self.is_path_clear(move)])
+
+        if not new_moves:  
+            new_moves = [move for move in possible_moves if self.is_path_clear(move)]
+
+        new_pos = choice(new_moves)
+        
         if new_pos != self.pos:
             self.model.grid.move_agent(self, new_pos)
             self.clean_trash()

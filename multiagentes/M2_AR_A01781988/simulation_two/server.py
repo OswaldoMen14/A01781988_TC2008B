@@ -30,7 +30,7 @@ def agent_portrayal(agent):
                     "r": 0.5}
     if isinstance(agent, ChargingStation):
         portrayal = {"Shape": "rect",
-                    "Color": "red" if not agent.is_charging else "green",
+                    "Color": "green",
                     "Filled": "true",
                     "Layer": 3,
                     "w": 1,
@@ -38,7 +38,7 @@ def agent_portrayal(agent):
 
     return portrayal
 
-model_params = {"N":5, "width":10, "height":10, "amount_trash": Slider("Amount of trash", 5, 10, 15),"num_obstacles": Slider("Number of obstacles", 5,10,15)} # N = número de agentes 
+model_params = {"N": Slider("Number of Agents", 1, 2, 10), "width":10, "height":10, "amount_trash": Slider("Amount of trash", 5, 10, 15),"num_obstacles": Slider("Number of obstacles", 5,10,15)} # N = número de agentes 
 
 grid = CanvasGrid(agent_portrayal, 10, 10, 500, 500)
 
